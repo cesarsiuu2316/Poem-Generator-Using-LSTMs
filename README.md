@@ -10,7 +10,7 @@
 ```bash
 git clone https://github.com/cesarsiuu2316/Poem-Generator-Using-LSTMs.git
 ```
-Download the csv file []() and place it into the root folder
+Download the csv file [PoetryFoundationData.csv](https://www.kaggle.com/datasets/tgdivy/poetry-foundation-poems) and place it into the root folder
 
 ### 2. Create and Activate a Virtual Environment
 It is recommended to use a virtual environment to install dependencies. Follow these steps:
