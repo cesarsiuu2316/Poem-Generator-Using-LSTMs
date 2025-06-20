@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+import os
 
 
 def load_data(path):
@@ -59,6 +60,7 @@ def clean_poems(df, max_lines):
 
 def save_preprocessed_data(string, output_path):
     # Save the preprocessed data to a text file
+    os.makedirs("datos_limpios", exist_ok=True)
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(string)
     print(f"Preprocessed data saved to {output_path}.")

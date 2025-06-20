@@ -18,11 +18,11 @@ RANDOM_STATE = 42 # Random seed for reproducibility
 
 # Global parameters to create the model
 VOCABULARY_SIZE = 0 # Will be set after vectorization
-N_CELLS = 128 # Number of LSTM cells
+N_CELLS = 64 # Number of LSTM cells
 VECTOR_MAX_LENGTH = 64 # Maximum length of the vector representation
 
 # Parameters for vectorization
-SEQUENCE_LENGTH = 150 # Length of each sequence for training
+SEQUENCE_LENGTH = 120 # Length of each sequence for training
 BATCH_SIZE = 128 # Batch size for training
 
 # Training parameters
@@ -49,8 +49,7 @@ def load_data():
 
 # Function to save the model
 def save_model(model):
-    if not os.path.exists("Modelos"):
-        os.makedirs("Modelos")
+    os.makedirs("Modelos", exist_ok=True) # Ensure the directory exists
     model.save(PATH_MODELO)
     print(f"Model saved to {PATH_MODELO}.")
 
@@ -68,10 +67,13 @@ def retrieve_model(model_path):
 
 # Function to save results to a text file
 def save_results_to_file(string, output_path):
-    if not os.path.exists("Results"):
-        os.makedirs("Results")
-    with open(output_path, 'a', encoding='utf-8') as f:
-        f.write('\n' + string)
+    os.makedirs("Results", exist_ok=True)  # Ensure the directory exists
+    try:
+        with open(output_path, 'a', encoding='utf-8') as f:
+            f.write('\n' + string)
+    except Exception as e:
+        print(f"Error saving results to {output_path}: {e}")
+        return
     print(f"Results data saved to {output_path}.")
 
 
@@ -133,15 +135,15 @@ def create_training_dataset(corpus):
     vectorize_layer.adapt([corpus])
     # Get the vocabulary size and the character set
     vocab = vectorize_layer.get_vocabulary()
-    print(f"Vocabulary Size: {len(vocab)}")
-    print(f"Vocabulary: {vocab}")
+    #print(f"Vocabulary Size: {len(vocab)}")
+    #print(f"Vocabulary: {vocab}")
     global VOCABULARY_SIZE
     VOCABULARY_SIZE = len(vocab)
 
     # Vectorize the entire corpus
     vectorized_text = vectorize_layer([corpus])[0]
-    print(f"Vectorized text length: {len(vectorized_text)}")
-    print(f"First 200 vectorized characters: {vectorized_text[:200]}")
+    #print(f"Vectorized text length: {len(vectorized_text)}")
+    #print(f"First 200 vectorized characters: {vectorized_text[:200]}")
 
     # Create a tf.data.Dataset from the vectorized text list
     char_dataset = tf.data.Dataset.from_tensor_slices(vectorized_text)
@@ -166,7 +168,6 @@ def create_training_dataset(corpus):
 
     # Map the split function to each sequence of the dataset, new dataset will contain pairs of (x, y))
     dataset = flat_sequences.map(split_input_target)
-    print(f"Dataset first element: {dataset.as_numpy_iterator()[0]}")
 
     # Shuffle the dataset by taking a random sample of 10,000 elements, than batch it and start the prefetching, which 
     # allows the model to fetch the next batch while training on the current one, iterating over the dataset
