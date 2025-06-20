@@ -1,205 +1,365 @@
+import datetime
 import time
 import os
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers
-from keras.models import Sequential
-from sklearn.model_selection import train_test_split
+from keras import layers, Model
 
 
-#np.set_printoptions(threshold=np.inf)
+PATH_DATOS = "datos_limpios/Cleaned_Poems_355927.txt" # Path to the cleaned poems dataset
+PATH_POEMAS_GENERADOS = "Results/Poemas_Generados.txt" # Path to save generated poems
+PATH_EVALUACIONES = "Results/Evaluations.txt" # Path to save evaluations of generated poems
+PATH_MODELO = "Modelos/Poem_Generator_Model_1.keras" # Path to save the trained model
+
+# Parameters for splitting the dataset
+TEST_SIZE = 0.2 # Percentage of data to use for testing
+RANDOM_STATE = 42 # Random seed for reproducibility
+
+# Global parameters to create the model
+VOCABULARY_SIZE = 0 # Will be set after vectorization
+N_CELLS = 128 # Number of LSTM cells
+VECTOR_MAX_LENGTH = 64 # Maximum length of the vector representation
+
+# Parameters for vectorization
+SEQUENCE_LENGTH = 150 # Length of each sequence for training
+BATCH_SIZE = 128 # Batch size for training
+
+# Training parameters
+EPOCHS = 10 # Number of epochs for training
+OPTIMIZER = 'adam' # Optimizer to use for training
+LOSS_FUNCTION = 'sparse_categorical_crossentropy' # Loss function for training
+METRICS = ['accuracy'] # Metrics to evaluate during training
+
+# Generation parameters
+TEMPERATURE = 1.0 # Temperature for sampling during text generation, user controlled
 
 
-def load_data(file_path):
-    try: 
-        with open(file_path, 'r', encoding='utf-8') as file:
-            data = file.read()  
-        print(f"File {file_path} opened successfully.")
+# Function to load the dataset from a text file
+def load_data():
+    try:
+        with open(PATH_DATOS, 'r', encoding='utf-8') as file:
+            data = file.read()
+        print(f"File {PATH_DATOS} opened successfully.")
         return data
     except FileNotFoundError:
-        print(f"Error: The file {file_path} was not found.")
+        print(f"Error: The file {PATH_DATOS} was not found.")
         return None
     
 
-def string_to_list_of_poems(string):
-    # Split the string into individual poems based on double newlines
-    list_of_poems = string.strip().split('\n\n')
-    print(f"Number of poems loaded: {len(list_of_poems)}")
-    return list_of_poems
+# Function to save the model
+def save_model(model):
+    if not os.path.exists("Modelos"):
+        os.makedirs("Modelos")
+    model.save(PATH_MODELO)
+    print(f"Model saved to {PATH_MODELO}.")
 
 
-def round_down(x, allowed_values):
-    return max([val for val in allowed_values if val <= x], default=min(allowed_values))
-
-
-def get_perfect_length_for_vectorization(poems):
-    poem_lengths = [len(poem) for poem in poems]
-    max_length = max(poem_lengths)
-    min_length = min(poem_lengths)
-    avg_length = sum(poem_lengths) / len(poem_lengths)
-    print(f"Max length: {max_length}, Min length: {min_length}, Avg length: {avg_length}")
-    p85 = int(np.percentile(poem_lengths, 85))
-    p90 = int(np.percentile(poem_lengths, 90))
-    print(f"85th percentile length: {p85}, 90th percentile length: {p90}")
-    allowed_values = [32, 64, 128, 256, 512, 1024, 2048, 4096]
-    p90 = round_down(p90, allowed_values)
-    return p90
-
-
-def embed_poems(list_of_poems, vector_max_length=64, max_tokens=None):
-    vectorize_layer = layers.TextVectorization(
-        max_tokens=max_tokens,
-        standardize = None,
-        split='character',
-        output_mode='int',
-        output_sequence_length=vector_max_length
-    )
-    vectorize_layer.adapt(list_of_poems)
-    vocab = vectorize_layer.get_vocabulary()
-    print(f'Vocabulary size: {len(vocab)}\n')
-    #print(f'First 100 characters in vocabulary: {vocab[:100]}\n')
-
-    vectors = vectorize_layer(list_of_poems)
-    #print(f'First poem as vector: {vectors[:10]}\n')
-    return vectors, vectorize_layer
-
-
-def split_dataset_into_train_and_test(vectors, test_size=0.2, random_state=42):
-    X = vectors[:, :-1]  # All but the last character
-    y = vectors[:, 1:]   # All but the first character
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
-    print(f'Training set size: {X_train.shape}, Test set size: {X_test.shape}')
-    return X_train, X_test, y_train, y_test
-
-
-def create_model(sequence_length, vocabulary_size, n_cells=128, vector_max_length=128):
-    model = Sequential([
-        # Embedding layer to convert integer indices to dense vectors
-        # With vocabulary size, output dimension for each character, sequence_length of each list value and masking to handle variable-length sequences
-        layers.Embedding(input_dim=vocabulary_size+1, output_dim=vector_max_length, mask_zero=True, input_shape=(sequence_length,)),
-        # LSTM layer for sequence processing with return_sequences=True to output a sequence of predictions
-        layers.LSTM(n_cells, return_sequences=True),
-        # Dense layer to output the next character in the sequence
-        layers.Dense(vocabulary_size)
-    ])
-    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-    print(model.summary())
-    return model
-
-
-def train_model(model, X_train, y_train, epochs=10, batch_size=32):
-    model.fit(
-        x=X_train,
-        y=y_train,
-        epochs=epochs,
-        verbose=1,
-        batch_size=batch_size,
-    )
-    model_softmax = Sequential([
-        model,
-        layers.Softmax()
-    ])
-    return model_softmax
-
-
-def save_model(model, moddel_name):
-    model.save(moddel_name + '.keras')
-
-
+# Function to retrieve the model from a file
 def retrieve_model(model_path):
     if os.path.exists(model_path):
-        model = keras.saving.load_model(model_path)
+        model = keras.models.load_model(model_path)
         print(f"Model loaded from {model_path}.")
         return model
     else:
         print(f"Error: The model file {model_path} does not exist.")
         return None
-    
 
-def sample(preds, temperature=1):
+
+# Function to save results to a text file
+def save_results_to_file(string, output_path):
+    if not os.path.exists("Results"):
+        os.makedirs("Results")
+    with open(output_path, 'a', encoding='utf-8') as f:
+        f.write('\n' + string)
+    print(f"Results data saved to {output_path}.")
+
+
+# Function to save generated poems to a file
+def save_poems(seed_phrase, poem, generation_time):
+    lines = []
+    lines.append("=" * 50)
+    lines.append(f"Seed phrase:\n{seed_phrase}\n")
+    lines.append(f"Generated poem:\n{poem}\n")
+    lines.append(f"Generation time: {generation_time:.2f} seconds\n")
+    string_poem = "\n".join(lines)
+    save_results_to_file(string_poem, PATH_POEMAS_GENERADOS)
+    print(f"{string_poem}\nSaved to {PATH_POEMAS_GENERADOS}.")
+    return string_poem
+
+
+# Function to save Model parameters and evaluation results
+def save_evaluation_results(model, training_time):
+    lines = []
+    lines.append("=" * 50)
+    lines.append("# Model Training Summary")
+    lines.append(f"Date: {datetime.now().isoformat()}")
+    lines.append(f"Training Time: {training_time:.2f}s")
+    lines.append(f"Dataset path: {PATH_DATOS}")
+    lines.append("\n## Parameters")
+    lines.append(f"TEST_SIZE: {TEST_SIZE}")
+    lines.append(f"RANDOM_STATE: {RANDOM_STATE}")
+    lines.append(f"VOCABULARY_SIZE: {VOCABULARY_SIZE}")
+    lines.append(f"N_CELLS: {N_CELLS}")
+    lines.append(f"VECTOR_MAX_LENGTH: {VECTOR_MAX_LENGTH}")
+    lines.append(f"SEQUENCE_LENGTH: {SEQUENCE_LENGTH}")
+    lines.append(f"BATCH_SIZE: {BATCH_SIZE}")
+    lines.append(f"EPOCHS: {EPOCHS}")
+    lines.append(f"OPTIMIZER: {OPTIMIZER}")
+    lines.append(f"LOSS_FUNCTION: {LOSS_FUNCTION}")
+    lines.append(f"METRICS: {METRICS}")
+    lines.append("\n## Model Architecture")
+    model_summary = []
+    model.summary(print_fn=lambda x: model_summary.append(x))
+    lines.extend(model_summary)
+    lines.append("\n## Training Results")
+    for i, (loss, acc) in enumerate(zip(model.history.history.get("loss", []), model.history.history.get("accuracy", [])), 1):
+        lines.append(f"Epoch {i}: loss={loss:.4f}, accuracy={acc:.4f}")
+    string = "\n".join(lines)
+    save_results_to_file(string, PATH_EVALUACIONES)
+    print(f"Evaluation results saved to {PATH_EVALUACIONES}.")
+
+
+# Function to create dataset and vectorization layer
+def create_training_dataset(corpus):
+    # Create the TextVectorization layer for the entire text
+    vectorize_layer = layers.TextVectorization(
+        max_tokens=None, # No limit on vocabulary size
+        standardize=None, # Data is already cleaned
+        split='character', # Split by character
+        output_mode='int' # Output as integers
+    )
+    # Adapt the vectorization layer to the corpus to build the vocabulary
+    vectorize_layer.adapt([corpus])
+    # Get the vocabulary size and the character set
+    vocab = vectorize_layer.get_vocabulary()
+    print(f"Vocabulary Size: {len(vocab)}")
+    print(f"Vocabulary: {vocab}")
+    global VOCABULARY_SIZE
+    VOCABULARY_SIZE = len(vocab)
+
+    # Vectorize the entire corpus
+    vectorized_text = vectorize_layer([corpus])[0]
+    print(f"Vectorized text length: {len(vectorized_text)}")
+    print(f"First 200 vectorized characters: {vectorized_text[:200]}")
+
+    # Create a tf.data.Dataset from the vectorized text list
+    char_dataset = tf.data.Dataset.from_tensor_slices(vectorized_text)
+    print(f"Dataset specs: {char_dataset.element_spec}")
+
+    # Use the window method to create sliding windows (subdatasets) of sequences
+    sequences_datasets = char_dataset.window(
+        SEQUENCE_LENGTH + 1, # +1 to get x and y pairs
+        shift=1, # Shift by 1 character to create overlapping sequences
+        drop_remainder=True # Drop the last incomplete windows
+    )
+
+    # Go through each window and flatten them, than join them into a single dataset
+    flat_sequences = sequences_datasets.flat_map(
+        lambda window: window.batch(SEQUENCE_LENGTH + 1)) # Batch each window into a sequence of characters
+
+    # 6. Create input (X) and target (y) pairs for each sequence
+    def split_input_target(chunk):
+        input_text = chunk[:-1] # All characters except the last one
+        target_text = chunk[1:] # All characters except the first one
+        return input_text, target_text
+
+    # Map the split function to each sequence of the dataset, new dataset will contain pairs of (x, y))
+    dataset = flat_sequences.map(split_input_target)
+    print(f"Dataset first element: {dataset.as_numpy_iterator()[0]}")
+
+    # Shuffle the dataset by taking a random sample of 10,000 elements, than batch it and start the prefetching, which 
+    # allows the model to fetch the next batch while training on the current one, iterating over the dataset
+    dataset = dataset.shuffle(10000).batch(
+        BATCH_SIZE, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+
+    print(f"Dataset created with sequence_length={SEQUENCE_LENGTH}, batch_size={BATCH_SIZE}")
+    return dataset, vectorize_layer
+
+
+# Function to create the model
+def create_model():
+    # Use None for the sequence length to allow variable-length inputs
+    inputs = layers.Input(shape=(None,), dtype=tf.int64)
+
+    # The Embedding layer needs to have mask_zero to ignore padding
+    embedding = tf.keras.layers.Embedding(
+        input_dim=VOCABULARY_SIZE,
+        output_dim=VECTOR_MAX_LENGTH,
+        mask_zero=True
+    )(inputs)  # input of embedding = to the output of inputs
+
+    # The LSTM layer with the specified cells and return sequences to learn from past steps
+    lstm1 = layers.LSTM(
+        N_CELLS,
+        return_sequences=True
+    )(embedding)  # input of lstm = to the output of embedding
+
+    dropout1 = layers.Dropout(0.2)(lstm1)
+
+    lstm2 = layers.LSTM(
+        N_CELLS,
+        return_sequences=True
+    )(dropout1)
+
+    # Layer 3: Dropout for regularization
+    dropout2 = layers.Dropout(0.2)(lstm2)
+
+    # The final Dense layer to predict the next token
+    outputs = layers.Dense(
+        VOCABULARY_SIZE,
+        activation="softmax"
+    )(dropout2)  # input of outputs = outputs of lstm
+
+    # Define a model with a starting input and output
+    model = Model(inputs=inputs, outputs=outputs)
+    return model
+
+
+# Function to train the model
+def train_model(model, dataset):
+    print("\n--- Training the model ---")
+    model.fit(
+        dataset, # The dataset created from the vectorized text already batched with x and y pairs
+        epochs=EPOCHS, # Number of epochs to train the model
+        verbose=1, # Verbose 1 to see the progress bar
+        batch_size=BATCH_SIZE, # Batch size ignored here since we already set it in the dataset
+    )
+    return model
+
+
+# Function to get the next character based on the predicted probabilities
+def sample(preds):
     preds = np.asarray(preds).astype(np.float64)
-    preds = np.log(preds + 1e-8) / temperature
-    exp_preds = np.exp(preds) 
+    if TEMPERATURE == 1.0:
+        return np.argmax(preds) # No temperature scaling, just take the argmax
+    preds = np.log(preds + 1e-8) / TEMPERATURE
+    exp_preds = np.exp(preds)
     preds = exp_preds / np.sum(exp_preds)
+    print(f"Preds: {preds}")
     next_char_id = np.random.choice(len(preds), p=preds)
     return next_char_id
-    
 
-def generate_poem(model, vocabulary, vectorize_layer, seed_text="", num_chars_to_generate=1000, temperature=1.0):
-    # Create a mapping from integer IDs back to characters to decode the model's output
-    id_to_char = tf.keras.layers.StringLookup(
-        vocabulary=vocabulary, invert=True
-    )
-    # Convert the seed text into a sequence of integer IDs
+
+# Function to generate a poem based on a seed text
+def generate_poem(model, vectorize_layer, seed_text="", num_chars_to_generate=500):
+    # Get the vocabulary directly from the layer the model was trained on.
+    id_to_char = vectorize_layer.get_vocabulary() 
+    # Vectorize the seed text into a 2d tensor of shape (1, sequence_length)
     input_ids = vectorize_layer([seed_text])
-    # The list to hold the generated characters as integer IDs
-    generated_ids = []
-    model.reset_states() # Clear any previous state
-    for i in range(num_chars_to_generate):
-        # Predict the next character probabilities
-        preds = model(input_ids)
-        next_char_id = sample(preds, temperature=temperature)
-        # Append the new character ID to our input for the next loop iteration
-        input_ids = tf.concat([input_ids, [next_char_id]], axis=1)
-        # Also save it for our final output
-        generated_ids.append(next_char_id[0].numpy())
+    # Array of generated characters
+    generated_chars = []
+    # Create a tensor to hold the current sequence of input IDs
+    current_sequence = tf.identity(input_ids)
 
-    # Convert the list of generated IDs back to text
-    generated_text = tf.strings.reduce_join(id_to_char(generated_ids))
-    # Print the final result
-    print(seed_text + generated_text.numpy().decode('utf-8'))
+    for _ in range(num_chars_to_generate):
+        # Predict the next character probabilities
+        preds = model.predict(current_sequence, verbose=0)
+        # Get the probabilities for only the last step
+        # preds is of shape (batch_size, sequence_length, vocabulary_size)
+        last_step_probs = preds[:, -1, :]
+        # last_step_probs is of shape (batch_size=1, vocabulary_size)
+        # 1D array of probabilities for the next character removing the batch dimension
+        preds_for_sampling = tf.squeeze(last_step_probs, axis=0).numpy()
+        # Sample the next ID. This ID is an index for our id_to_char list.
+        next_char_id = sample(preds_for_sampling)
+        # Directly get the character from the list.
+        generated_chars.append(id_to_char[next_char_id])
+        # Prepare the input for the next loop
+        next_char_id_tensor = tf.constant([[next_char_id]], dtype=tf.int64)
+        # Concatenate the current sequence with the next character ID
+        # Limit current sequence to avoid exceeding the sequence length
+        current_sequence = current_sequence[-(SEQUENCE_LENGTH-1):]
+        # Concatenate the current sequence with the next character ID
+        current_sequence = tf.concat(
+            [current_sequence, next_char_id_tensor], axis=1)
+
+    # Join and print the result
     print("--- End of Generation ---")
+    generated_text = "".join(generated_chars)
+    poem = seed_text + generated_text
+    return poem
+
+
+def run_poem_generator(model, vectorize_layer):
+    print("\n--- Poem Generator ---")
+    while (True):
+        # Get user input for seed text, number of characters to generate, and temperature
+        seed_text = input("Enter a seed text for the poem: ").strip().lower()
+        num_chars_to_generate = 200 # Default number of characters to generate
+        try: 
+            num_chars_to_generate = int(input("Enter the number of characters to generate: "))
+        except ValueError:
+            print("Invalid input for number of characters. Using default value of 200.")
+            num_chars_to_generate = 200
+
+        global TEMPERATURE
+        try:
+            TEMPERATURE = float(input("Enter the temperature for sampling (default 1.0): ") or 1.0)
+        except ValueError:
+            print("Invalid input for temperature. Using default value of 1.0.")
+            
+        # Start time for poem generation
+        start_time = time.time()
+        # Generate the poem using the model and vectorization layer
+        poem = generate_poem(
+            model,
+            vectorize_layer,
+            seed_text=seed_text,
+            num_chars_to_generate=num_chars_to_generate,
+        )
+        # End time for poem generation
+        generation_time = time.time() - start_time
+        # Save the generated poem to a file
+        output = save_poems(seed_text, poem, generation_time)
+        print(output)
+
+        if input("Continue (y/n)? ").strip().lower() != "y":
+            break
 
 
 def main():
-    # Retrieve the model
-    model = retrieve_model("poem_generator_model.keras")
+    # Read dataset
+    poems = load_data()
+    if poems is None:
+        return
+    
+    # Load or create the model
+    model = None
+    try:
+        model = retrieve_model(PATH_MODELO)
+    except Exception as e:
+        print(f"Error loading model: {e}")
+    
+    # Create the training dataset and vectorization layer
+    dataset, vectorize_layer = create_training_dataset(poems)
+    
+    # Get the vocabulary and its size from the vectorization layer
+    vocabulary = vectorize_layer.get_vocabulary()
+    global VOCABULARY_SIZE
+    VOCABULARY_SIZE = len(vocabulary)
+
     if model is None:
         print("Model could not be loaded. Creating new one.")
-
-        # Read dataset
-        path = "PoetryFoundationData.txt"
-        poems = load_data(path)
-        if poems is None:
-            print("No data to process.")
-            return 
-        
-        # Convert poems to a list of strings
-        list_of_poems = string_to_list_of_poems(poems)
-        #print(f'First poem as characters: {list_of_poems[:2]}\n')
-        
-        # Get the perfect length for vectorization
-        max_length = get_perfect_length_for_vectorization(list_of_poems)
-        #print(f'Perfect length for vectorization: {max_length}\n')
-        
-        # Preprocess and embed the poems
-        vectors, vectorize_layer = embed_poems(list_of_poems, vector_max_length=max_length)
-        vocabulary_size = len(vectorize_layer.get_vocabulary())
-
-        # Devide the dataset into training and validation sets
-        vectors = vectors.numpy()  # Convert to numpy array for further processing
-        X_train, X_test, y_train, y_test = split_dataset_into_train_and_test(vectors, test_size=0.2, random_state=42)
-        sequence_length = X_train.shape[1]  # Get the sequence length from the training data
-
-        # Create the model
-        base_model = create_model(sequence_length, vocabulary_size, n_cells=128, vector_max_length=128)
-        model = train_model(base_model, X_train, y_train, epochs=20, batch_size=32)
+        # Create the model and compile
+        model = create_model()
+        # Compile the model with the specified optimizer, loss function, and metrics
+        model.compile(optimizer=OPTIMIZER,loss=LOSS_FUNCTION, metrics=METRICS)
+        print(model.summary())
+        # Start training time
+        start_time = time.time()
+        # Train the model
+        model = train_model(model, dataset)
+        # End training time
+        training_time = time.time() - start_time
         # Save the model
-        save_model(model, "poem_generator_model")
+        save_model(model, PATH_MODELO)
+        # Save evaluation results
+        save_evaluation_results(model, model.history, training_time)
 
-    # Generate a poem
-    seed_text = input("Enter a seed text for the poem: ")
-    num_chars_to_generate = int(input("Enter the number of characters to generate: "))
-    temperature = float(input("Enter the temperature for sampling (default 1.0): ") or 1.0)
-    
-    generate_poem(
-        model,
-        vectorize_layer.get_vocabulary(),
-        vectorize_layer, seed_text=seed_text,
-        num_chars_to_generate=num_chars_to_generate,
-        temperature=temperature
-    )
+    # Run the poem generator
+    run_poem_generator(model, vectorize_layer)
+
 
 if __name__ == "__main__":
     main()
