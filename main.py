@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers, Model
+from keras.optimizers import Adam
 
 
 PATH_DATOS = "datos_limpios/Cleaned_Poems_355927.txt" # Path to the cleaned poems dataset
@@ -19,15 +20,17 @@ RANDOM_STATE = 42 # Random seed for reproducibility
 # Global parameters to create the model
 VOCABULARY_SIZE = 0 # Will be set after vectorization
 N_CELLS = 64 # Number of LSTM cells
-VECTOR_MAX_LENGTH = 64 # Maximum length of the vector representation
+EMBEDDING_LENGTH = 64 # Maximum length of the vector representation
 
 # Parameters for vectorization
 SEQUENCE_LENGTH = 120 # Length of each sequence for training
 BATCH_SIZE = 128 # Batch size for training
+STEPS_PER_EPOCH = 0 # Steps per epoch according to batches and length of data, calculated later
+
 
 # Training parameters
 EPOCHS = 10 # Number of epochs for training
-OPTIMIZER = 'adam' # Optimizer to use for training
+OPTIMIZER = Adam(learning_rate=0.0001, clipnorm=1.0) # Optimizer for training
 LOSS_FUNCTION = 'sparse_categorical_crossentropy' # Loss function for training
 METRICS = ['accuracy'] # Metrics to evaluate during training
 
@@ -104,11 +107,12 @@ def save_evaluation_results(model, training_time):
     lines.append(f"RANDOM_STATE: {RANDOM_STATE}")
     lines.append(f"VOCABULARY_SIZE: {VOCABULARY_SIZE}")
     lines.append(f"N_CELLS: {N_CELLS}")
-    lines.append(f"VECTOR_MAX_LENGTH: {VECTOR_MAX_LENGTH}")
+    lines.append(f"EMBEDDING_LENGTH: {EMBEDDING_LENGTH}")
     lines.append(f"SEQUENCE_LENGTH: {SEQUENCE_LENGTH}")
     lines.append(f"BATCH_SIZE: {BATCH_SIZE}")
     lines.append(f"EPOCHS: {EPOCHS}")
-    lines.append(f"OPTIMIZER: {OPTIMIZER}")
+    config = OPTIMIZER.get_config()
+    lines.append(f"OPTIMIZER: {config['name']}, learning_rate: {config['learning_rate']}, clipnorm: {config['clipnorm']}")
     lines.append(f"LOSS_FUNCTION: {LOSS_FUNCTION}")
     lines.append(f"METRICS: {METRICS}")
     lines.append("\n## Model Architecture")
@@ -117,7 +121,7 @@ def save_evaluation_results(model, training_time):
     lines.extend(model_summary)
     lines.append("\n## Training Results")
     for i, (loss, acc) in enumerate(zip(model.history.history.get("loss", []), model.history.history.get("accuracy", [])), 1):
-        lines.append(f"Epoch {i}: loss={loss:.4f}, accuracy={acc:.4f}")
+        lines.append(f"Epoch {i}: Steps={STEPS_PER_EPOCH}, loss={loss:.4f}, accuracy={acc:.4f}")
     string = "\n".join(lines)
     save_results_to_file(string, PATH_EVALUACIONES)
     print(f"Evaluation results saved to {PATH_EVALUACIONES}.")
@@ -170,10 +174,15 @@ def create_training_dataset(corpus):
     # Map the split function to each sequence of the dataset, new dataset will contain pairs of (x, y))
     dataset = flat_sequences.map(split_input_target)
 
-    # Shuffle the dataset by taking a random sample of 10,000 elements, than batch it and start the prefetching, which 
+    # Calculate the total number of sequences based on the vectorized text length and sequence length
+    total_sequences = len(vectorized_text) - SEQUENCE_LENGTH
+    # Set the global STEPS_PER_EPOCH variable based on the total sequences and batch size
+    global STEPS_PER_EPOCH
+    STEPS_PER_EPOCH = total_sequences // BATCH_SIZE
+
+    # Dataset needs to be reiterated every epoch, so use repeat() than batch it and start the prefetching, which 
     # allows the model to fetch the next batch while training on the current one, iterating over the dataset
-    dataset = dataset.shuffle(10000).batch(
-        BATCH_SIZE, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    dataset = dataset.repeat().batch(BATCH_SIZE, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
 
     print(f"Dataset created with sequence_length={SEQUENCE_LENGTH}, batch_size={BATCH_SIZE}")
     return dataset, vectorize_layer
@@ -187,7 +196,7 @@ def create_model():
     # The Embedding layer needs to have mask_zero to ignore padding
     embedding = tf.keras.layers.Embedding(
         input_dim=VOCABULARY_SIZE,
-        output_dim=VECTOR_MAX_LENGTH,
+        output_dim=EMBEDDING_LENGTH,
         mask_zero=True
     )(inputs)  # input of embedding = to the output of inputs
 
@@ -226,6 +235,7 @@ def train_model(model, dataset):
         epochs=EPOCHS, # Number of epochs to train the model
         verbose=1, # Verbose 1 to see the progress bar
         batch_size=BATCH_SIZE, # Batch size ignored here since we already set it in the dataset
+        steps_per_epoch=STEPS_PER_EPOCH, # Number of steps per epoch
     )
     return model
 
