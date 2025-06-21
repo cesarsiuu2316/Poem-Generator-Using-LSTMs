@@ -32,7 +32,7 @@ LOSS_FUNCTION = 'sparse_categorical_crossentropy' # Loss function for training
 METRICS = ['accuracy'] # Metrics to evaluate during training
 
 # Generation parameters
-TEMPERATURE = 1.0 # Temperature for sampling during text generation, user controlled
+TEMPERATURE = 0.0 # Temperature for sampling during text generation, user controlled
 
 
 # Function to load the dataset from a text file
@@ -49,19 +49,19 @@ def load_data():
 
 # Function to save the model
 def save_model(model):
-    os.makedirs("Modelos", exist_ok=True) # Ensure the directory exists
+    os.makedirs("Modelos", exist_ok=True)
     model.save(PATH_MODELO)
     print(f"Model saved to {PATH_MODELO}.")
 
 
 # Function to retrieve the model from a file
-def retrieve_model(model_path):
-    if os.path.exists(model_path):
-        model = keras.models.load_model(model_path)
-        print(f"Model loaded from {model_path}.")
+def retrieve_model():
+    if os.path.exists(PATH_MODELO):
+        model = keras.models.load_model(PATH_MODELO)
+        print(f"Model loaded from {PATH_MODELO}.")
         return model
     else:
-        print(f"Error: The model file {model_path} does not exist.")
+        print(f"Error: The model file {PATH_MODELO} does not exist.")
         return None
 
 
@@ -81,6 +81,7 @@ def save_results_to_file(string, output_path):
 def save_poems(seed_phrase, poem, generation_time):
     lines = []
     lines.append("=" * 50)
+    lines.append(f"Model path used: {PATH_MODELO}")
     lines.append(f"Seed phrase:\n{seed_phrase}\n")
     lines.append(f"Generated poem:\n{poem}\n")
     lines.append(f"Generation time: {generation_time:.2f} seconds\n")
@@ -232,8 +233,8 @@ def train_model(model, dataset):
 # Function to get the next character based on the predicted probabilities
 def sample(preds):
     preds = np.asarray(preds).astype(np.float64)
-    if TEMPERATURE == 1.0:
-        return np.argmax(preds) # No temperature scaling, just take the argmax
+    if TEMPERATURE == 0:
+        return np.argmax(preds)
     preds = np.log(preds + 1e-8) / TEMPERATURE
     exp_preds = np.exp(preds)
     preds = exp_preds / np.sum(exp_preds)
@@ -296,9 +297,9 @@ def run_poem_generator(model, vectorize_layer):
 
         global TEMPERATURE
         try:
-            TEMPERATURE = float(input("Enter the temperature for sampling (default 1.0): ") or 1.0)
+            TEMPERATURE = float(input("Enter the temperature for sampling (default 0.0): ") or 0.0)
         except ValueError:
-            print("Invalid input for temperature. Using default value of 1.0.")
+            print("Invalid input for temperature. Using default value of 0.0.")
             
         # Start time for poem generation
         start_time = time.time()
@@ -328,7 +329,7 @@ def main():
     # Load or create the model
     model = None
     try:
-        model = retrieve_model(PATH_MODELO)
+        model = retrieve_model()
     except Exception as e:
         print(f"Error loading model: {e}")
     
@@ -354,13 +355,12 @@ def main():
         # End training time
         training_time = time.time() - start_time
         # Save the model
-        save_model(model, PATH_MODELO)
+        save_model(model)
         # Save evaluation results
-        save_evaluation_results(model, model.history, training_time)
+        save_evaluation_results(model, training_time)
 
     # Run the poem generator
     run_poem_generator(model, vectorize_layer)
-
 
 if __name__ == "__main__":
     main()
