@@ -12,5 +12,9 @@ venv
 # Files and directories
 PoetryFoundationData.csv
 datos_limpios/
-Results/
-Modelos/
+
+# Ignored models
+Modelos/Poem_Generator_Model_1.keras
+Modelos/Poem_Generator_Model_2.keras
+Modelos/Poem_Generator_Model_3.keras
+Modelos/Poem_Generator_Model_4.keras

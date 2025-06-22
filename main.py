@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import time
 import os
 import numpy as np
@@ -11,7 +11,7 @@ from keras.optimizers import Adam
 PATH_DATOS = "datos_limpios/Cleaned_Poems_355927.txt" # Path to the cleaned poems dataset
 PATH_POEMAS_GENERADOS = "Results/Poemas_Generados.txt" # Path to save generated poems
 PATH_EVALUACIONES = "Results/Evaluations.txt" # Path to save evaluations of generated poems
-PATH_MODELO = "Modelos/Poem_Generator_Model_1.keras" # Path to save the trained model
+PATH_MODELO = "Modelos/Poem_Generator_Model_5.keras" # Path to save the trained model
 
 # Parameters for splitting the dataset
 TEST_SIZE = 0.2 # Percentage of data to use for testing
@@ -19,18 +19,19 @@ RANDOM_STATE = 42 # Random seed for reproducibility
 
 # Global parameters to create the model
 VOCABULARY_SIZE = 0 # Will be set after vectorization
-N_CELLS = 64 # Number of LSTM cells
+N_CELLS = 128 # Number of LSTM cells
 EMBEDDING_LENGTH = 64 # Maximum length of the vector representation
 
 # Parameters for vectorization
-SEQUENCE_LENGTH = 120 # Length of each sequence for training
-BATCH_SIZE = 128 # Batch size for training
+SEQUENCE_LENGTH = 100 # Length of each sequence for training
+BATCH_SIZE = 64 # Batch size for training
 STEPS_PER_EPOCH = 0 # Steps per epoch according to batches and length of data, calculated later
 
 
 # Training parameters
 EPOCHS = 10 # Number of epochs for training
-OPTIMIZER = Adam(learning_rate=0.0001, clipnorm=1.0) # Optimizer for training
+#OPTIMIZER = Adam(learning_rate=0.0001, clipnorm=1.0) # Optimizer for training
+OPTIMIZER = "adam" # Optimizer for training, using string for compatibility with Keras
 LOSS_FUNCTION = 'sparse_categorical_crossentropy' # Loss function for training
 METRICS = ['accuracy'] # Metrics to evaluate during training
 
@@ -85,22 +86,25 @@ def save_poems(seed_phrase, poem, generation_time):
     lines = []
     lines.append("=" * 50)
     lines.append(f"Model path used: {PATH_MODELO}")
+    lines.append(f"Date: {datetime.now().isoformat()}")
+    lines.append(f"Temperature: {TEMPERATURE}\n")
     lines.append(f"Seed phrase:\n{seed_phrase}\n")
     lines.append(f"Generated poem:\n{poem}\n")
     lines.append(f"Generation time: {generation_time:.2f} seconds\n")
     string_poem = "\n".join(lines)
     save_results_to_file(string_poem, PATH_POEMAS_GENERADOS)
-    print(f"{string_poem}\nSaved to {PATH_POEMAS_GENERADOS}.")
+    print(f"Poem data saved to {PATH_POEMAS_GENERADOS}.")
     return string_poem
 
 
 # Function to save Model parameters and evaluation results
-def save_evaluation_results(model, training_time):
+def save_evaluation_results(model, history, training_time):
     lines = []
     lines.append("=" * 50)
     lines.append("# Model Training Summary")
     lines.append(f"Date: {datetime.now().isoformat()}")
     lines.append(f"Training Time: {training_time:.2f}s")
+    lines.append(f"Model path: {PATH_MODELO}")
     lines.append(f"Dataset path: {PATH_DATOS}")
     lines.append("\n## Parameters")
     lines.append(f"TEST_SIZE: {TEST_SIZE}")
@@ -113,6 +117,7 @@ def save_evaluation_results(model, training_time):
     lines.append(f"EPOCHS: {EPOCHS}")
     config = OPTIMIZER.get_config()
     lines.append(f"OPTIMIZER: {config['name']}, learning_rate: {config['learning_rate']}, clipnorm: {config['clipnorm']}")
+    #lines.append(f"OPTIMIZER {OPTIMIZER}")
     lines.append(f"LOSS_FUNCTION: {LOSS_FUNCTION}")
     lines.append(f"METRICS: {METRICS}")
     lines.append("\n## Model Architecture")
@@ -120,7 +125,7 @@ def save_evaluation_results(model, training_time):
     model.summary(print_fn=lambda x: model_summary.append(x))
     lines.extend(model_summary)
     lines.append("\n## Training Results")
-    for i, (loss, acc) in enumerate(zip(model.history.history.get("loss", []), model.history.history.get("accuracy", [])), 1):
+    for i, (loss, acc) in enumerate(zip(history.history.get("loss", []), history.history.get("accuracy", [])), 1):
         lines.append(f"Epoch {i}: Steps={STEPS_PER_EPOCH}, loss={loss:.4f}, accuracy={acc:.4f}")
     string = "\n".join(lines)
     save_results_to_file(string, PATH_EVALUACIONES)
@@ -230,14 +235,14 @@ def create_model():
 # Function to train the model
 def train_model(model, dataset):
     print("\n--- Training the model ---")
-    model.fit(
+    history = model.fit(
         dataset, # The dataset created from the vectorized text already batched with x and y pairs
         epochs=EPOCHS, # Number of epochs to train the model
         verbose=1, # Verbose 1 to see the progress bar
         batch_size=BATCH_SIZE, # Batch size ignored here since we already set it in the dataset
         steps_per_epoch=STEPS_PER_EPOCH, # Number of steps per epoch
     )
-    return model
+    return model, history
 
 
 # Function to get the next character based on the predicted probabilities
@@ -248,7 +253,6 @@ def sample(preds):
     preds = np.log(preds + 1e-8) / TEMPERATURE
     exp_preds = np.exp(preds)
     preds = exp_preds / np.sum(exp_preds)
-    print(f"Preds: {preds}")
     next_char_id = np.random.choice(len(preds), p=preds)
     return next_char_id
 
@@ -346,11 +350,6 @@ def main():
     # Create the training dataset and vectorization layer
     dataset, vectorize_layer = create_training_dataset(poems)
     
-    # Get the vocabulary and its size from the vectorization layer
-    vocabulary = vectorize_layer.get_vocabulary()
-    global VOCABULARY_SIZE
-    VOCABULARY_SIZE = len(vocabulary)
-
     if model is None:
         print("Model could not be loaded. Creating new one.")
         # Create the model and compile
@@ -360,14 +359,14 @@ def main():
         print(model.summary())
         # Start training time
         start_time = time.time()
-        # Train the model
-        model = train_model(model, dataset)
+        # Train the model and get the history of the logs
+        model, history = train_model(model, dataset)        
         # End training time
         training_time = time.time() - start_time
         # Save the model
         save_model(model)
         # Save evaluation results
-        save_evaluation_results(model, training_time)
+        save_evaluation_results(model, history, training_time)
 
     # Run the poem generator
     run_poem_generator(model, vectorize_layer)

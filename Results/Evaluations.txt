@@ -1,0 +1,311 @@
+
+==================================================
+# Model Training Summary
+Date: 2025-06-22T02:14:38.831292
+Training Time: 6394.21s
+Dataset path: datos_limpios/Cleaned_Poems_1749375.txt
+
+## Parameters
+TEST_SIZE: 0.2
+RANDOM_STATE: 42
+VOCABULARY_SIZE: 41
+N_CELLS: 256
+EMBEDDING_LENGTH: 128
+SEQUENCE_LENGTH: 150
+BATCH_SIZE: 128
+EPOCHS: 10
+OPTIMIZER adam
+LOSS_FUNCTION: sparse_categorical_crossentropy
+METRICS: ['accuracy']
+
+## Model Architecture
+Model: "functional"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)              ┃ Output Shape           ┃        Param # ┃ Connected to           ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ input_layer (InputLayer)  │ (None, None)           │              0 │ -                      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ embedding (Embedding)     │ (None, None, 128)      │          5,248 │ input_layer[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ not_equal (NotEqual)      │ (None, None)           │              0 │ input_layer[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm (LSTM)               │ (None, None, 256)      │        394,240 │ embedding[0][0],       │
+│                           │                        │                │ not_equal[0][0]        │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout (Dropout)         │ (None, None, 256)      │              0 │ lstm[0][0]             │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_1 (LSTM)             │ (None, None, 256)      │        525,312 │ dropout[0][0],         │
+│                           │                        │                │ not_equal[0][0]        │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_1 (Dropout)       │ (None, None, 256)      │              0 │ lstm_1[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dense (Dense)             │ (None, None, 41)       │         10,537 │ dropout_1[0][0]        │
+└───────────────────────────┴────────────────────────┴────────────────┴────────────────────────┘
+ Total params: 2,806,013 (10.70 MB)
+ Trainable params: 935,337 (3.57 MB)
+ Non-trainable params: 0 (0.00 B)
+ Optimizer params: 1,870,676 (7.14 MB)
+
+
+## Training Results
+Epoch 1: Steps=13665, loss=1.7793, accuracy=0.4552
+Epoch 2: Steps=13665, loss=1.6078, accuracy=0.4997
+Epoch 3: Steps=13665, loss=1.5635, accuracy=0.5116
+Epoch 4: Steps=13665, loss=1.5392, accuracy=0.5180
+Epoch 5: Steps=13665, loss=1.5235, accuracy=0.5220
+Epoch 6: Steps=13665, loss=1.5122, accuracy=0.5251
+Epoch 7: Steps=13665, loss=1.5037, accuracy=0.5274
+Epoch 8: Steps=13665, loss=1.4970, accuracy=0.5292
+Epoch 9: Steps=13665, loss=1.4918, accuracy=0.5305
+Epoch 10: Steps=13665, loss=1.4870, accuracy=0.5318
+==================================================
+# Model Training Summary
+Date: 2025-06-22T04:35:14.641635
+Training Time: 6660.63s
+Dataset path: datos_limpios/Cleaned_Poems_1749375.txt
+
+## Parameters
+TEST_SIZE: 0.2
+RANDOM_STATE: 42
+VOCABULARY_SIZE: 41
+N_CELLS: 256
+EMBEDDING_LENGTH: 256
+SEQUENCE_LENGTH: 150
+BATCH_SIZE: 128
+EPOCHS: 10
+OPTIMIZER adam
+LOSS_FUNCTION: sparse_categorical_crossentropy
+METRICS: ['accuracy']
+
+## Model Architecture
+Model: "functional_1"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)              ┃ Output Shape           ┃        Param # ┃ Connected to           ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ input_layer_1             │ (None, None)           │              0 │ -                      │
+│ (InputLayer)              │                        │                │                        │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ embedding_1 (Embedding)   │ (None, None, 256)      │         10,496 │ input_layer_1[0][0]    │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ not_equal_1 (NotEqual)    │ (None, None)           │              0 │ input_layer_1[0][0]    │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_2 (LSTM)             │ (None, None, 256)      │        525,312 │ embedding_1[0][0],     │
+│                           │                        │                │ not_equal_1[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_2 (Dropout)       │ (None, None, 256)      │              0 │ lstm_2[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_3 (LSTM)             │ (None, None, 256)      │        525,312 │ dropout_2[0][0],       │
+│                           │                        │                │ not_equal_1[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_3 (Dropout)       │ (None, None, 256)      │              0 │ lstm_3[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dense_1 (Dense)           │ (None, None, 41)       │         10,537 │ dropout_3[0][0]        │
+└───────────────────────────┴────────────────────────┴────────────────┴────────────────────────┘
+ Total params: 3,214,973 (12.26 MB)
+ Trainable params: 1,071,657 (4.09 MB)
+ Non-trainable params: 0 (0.00 B)
+ Optimizer params: 2,143,316 (8.18 MB)
+
+
+## Training Results
+Epoch 1: Steps=13665, loss=1.7812, accuracy=0.4541
+Epoch 2: Steps=13665, loss=1.6146, accuracy=0.4976
+Epoch 3: Steps=13665, loss=1.5691, accuracy=0.5099
+Epoch 4: Steps=13665, loss=1.5439, accuracy=0.5166
+Epoch 5: Steps=13665, loss=1.5271, accuracy=0.5211
+Epoch 6: Steps=13665, loss=1.5153, accuracy=0.5243
+Epoch 7: Steps=13665, loss=1.5062, accuracy=0.5266
+Epoch 8: Steps=13665, loss=1.4989, accuracy=0.5286
+Epoch 9: Steps=13665, loss=1.4930, accuracy=0.5301
+Epoch 10: Steps=13665, loss=1.4876, accuracy=0.5315
+==================================================
+# Model Training Summary
+Date: 2025-06-22T08:48:16.293866
+Training Time: 14482.01s
+Dataset path: datos_limpios/Cleaned_Poems_1749375.txt
+
+## Parameters
+TEST_SIZE: 0.2
+RANDOM_STATE: 42
+VOCABULARY_SIZE: 41
+N_CELLS: 512
+EMBEDDING_LENGTH: 256
+SEQUENCE_LENGTH: 150
+BATCH_SIZE: 128
+EPOCHS: 10
+OPTIMIZER adam
+LOSS_FUNCTION: sparse_categorical_crossentropy
+METRICS: ['accuracy']
+
+## Model Architecture
+Model: "functional_2"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)              ┃ Output Shape           ┃        Param # ┃ Connected to           ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ input_layer_2             │ (None, None)           │              0 │ -                      │
+│ (InputLayer)              │                        │                │                        │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ embedding_2 (Embedding)   │ (None, None, 256)      │         10,496 │ input_layer_2[0][0]    │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ not_equal_2 (NotEqual)    │ (None, None)           │              0 │ input_layer_2[0][0]    │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_4 (LSTM)             │ (None, None, 512)      │      1,574,912 │ embedding_2[0][0],     │
+│                           │                        │                │ not_equal_2[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_4 (Dropout)       │ (None, None, 512)      │              0 │ lstm_4[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_5 (LSTM)             │ (None, None, 512)      │      2,099,200 │ dropout_4[0][0],       │
+│                           │                        │                │ not_equal_2[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_5 (Dropout)       │ (None, None, 512)      │              0 │ lstm_5[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dense_2 (Dense)           │ (None, None, 41)       │         21,033 │ dropout_5[0][0]        │
+└───────────────────────────┴────────────────────────┴────────────────┴────────────────────────┘
+ Total params: 11,116,925 (42.41 MB)
+ Trainable params: 3,705,641 (14.14 MB)
+ Non-trainable params: 0 (0.00 B)
+ Optimizer params: 7,411,284 (28.27 MB)
+
+
+## Training Results
+Epoch 1: Steps=13665, loss=1.6932, accuracy=0.4777
+Epoch 2: Steps=13665, loss=1.5405, accuracy=0.5178
+Epoch 3: Steps=13665, loss=1.4978, accuracy=0.5289
+Epoch 4: Steps=13665, loss=1.4723, accuracy=0.5356
+Epoch 5: Steps=13665, loss=1.4538, accuracy=0.5402
+Epoch 6: Steps=13665, loss=1.4395, accuracy=0.5439
+Epoch 7: Steps=13665, loss=1.4281, accuracy=0.5468
+Epoch 8: Steps=13665, loss=1.4187, accuracy=0.5493
+Epoch 9: Steps=13665, loss=1.4103, accuracy=0.5514
+Epoch 10: Steps=13665, loss=1.4034, accuracy=0.5532
+
+==================================================
+# Model Training Summary
+Date: 2025-06-22T09:21:36.822085
+Training Time: 1129.17s
+Dataset path: datos_limpios/Cleaned_Poems_355927.txt
+
+## Parameters
+TEST_SIZE: 0.2
+RANDOM_STATE: 42
+VOCABULARY_SIZE: 41
+N_CELLS: 256
+EMBEDDING_LENGTH: 128
+SEQUENCE_LENGTH: 120
+BATCH_SIZE: 128
+EPOCHS: 10
+OPTIMIZER: adam, learning_rate: 0.0005000000237487257, clipnorm: 1.0
+LOSS_FUNCTION: sparse_categorical_crossentropy
+METRICS: ['accuracy']
+
+## Model Architecture
+Model: "functional"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)              ┃ Output Shape           ┃        Param # ┃ Connected to           ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ input_layer (InputLayer)  │ (None, None)           │              0 │ -                      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ embedding (Embedding)     │ (None, None, 128)      │          5,248 │ input_layer[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ not_equal_1 (NotEqual)    │ (None, None)           │              0 │ input_layer[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm (LSTM)               │ (None, None, 256)      │        394,240 │ embedding[0][0],       │
+│                           │                        │                │ not_equal_1[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout (Dropout)         │ (None, None, 256)      │              0 │ lstm[0][0]             │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_1 (LSTM)             │ (None, None, 256)      │        525,312 │ dropout[0][0],         │
+│                           │                        │                │ not_equal_1[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_1 (Dropout)       │ (None, None, 256)      │              0 │ lstm_1[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dense (Dense)             │ (None, None, 41)       │         10,537 │ dropout_1[0][0]        │
+└───────────────────────────┴────────────────────────┴────────────────┴────────────────────────┘
+ Total params: 2,806,013 (10.70 MB)
+ Trainable params: 935,337 (3.57 MB)
+ Non-trainable params: 0 (0.00 B)
+ Optimizer params: 1,870,676 (7.14 MB)
+
+
+## Training Results
+Epoch 1: Steps=2779, loss=2.1643, accuracy=0.3560
+Epoch 2: Steps=2779, loss=1.8513, accuracy=0.4343
+Epoch 3: Steps=2779, loss=1.7554, accuracy=0.4581
+Epoch 4: Steps=2779, loss=1.6937, accuracy=0.4738
+Epoch 5: Steps=2779, loss=1.6463, accuracy=0.4866
+Epoch 6: Steps=2779, loss=1.6092, accuracy=0.4968
+Epoch 7: Steps=2779, loss=1.5779, accuracy=0.5053
+Epoch 8: Steps=2779, loss=1.5502, accuracy=0.5130
+Epoch 9: Steps=2779, loss=1.5254, accuracy=0.5199
+Epoch 10: Steps=2779, loss=1.5027, accuracy=0.5262
+
+==================================================
+# Model Training Summary
+Date: 2025-06-22T11:23:42.112329
+Training Time: 6639.96s
+Dataset path: datos_limpios/Cleaned_Poems_355927.txt
+
+## Parameters
+TEST_SIZE: 0.2
+RANDOM_STATE: 42
+VOCABULARY_SIZE: 41
+N_CELLS: 512
+EMBEDDING_LENGTH: 128
+SEQUENCE_LENGTH: 120
+BATCH_SIZE: 128
+EPOCHS: 20
+OPTIMIZER: adam, learning_rate: 0.0005000000237487257, clipnorm: 1.0
+LOSS_FUNCTION: sparse_categorical_crossentropy
+METRICS: ['accuracy']
+
+## Model Architecture
+Model: "functional_1"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)              ┃ Output Shape           ┃        Param # ┃ Connected to           ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ input_layer_1             │ (None, None)           │              0 │ -                      │
+│ (InputLayer)              │                        │                │                        │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ embedding_1 (Embedding)   │ (None, None, 128)      │          5,248 │ input_layer_1[0][0]    │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ not_equal_4 (NotEqual)    │ (None, None)           │              0 │ input_layer_1[0][0]    │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_2 (LSTM)             │ (None, None, 512)      │      1,312,768 │ embedding_1[0][0],     │
+│                           │                        │                │ not_equal_4[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_2 (Dropout)       │ (None, None, 512)      │              0 │ lstm_2[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ lstm_3 (LSTM)             │ (None, None, 512)      │      2,099,200 │ dropout_2[0][0],       │
+│                           │                        │                │ not_equal_4[0][0]      │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dropout_3 (Dropout)       │ (None, None, 512)      │              0 │ lstm_3[0][0]           │
+├───────────────────────────┼────────────────────────┼────────────────┼────────────────────────┤
+│ dense_1 (Dense)           │ (None, None, 41)       │         21,033 │ dropout_3[0][0]        │
+└───────────────────────────┴────────────────────────┴────────────────┴────────────────────────┘
+ Total params: 10,314,749 (39.35 MB)
+ Trainable params: 3,438,249 (13.12 MB)
+ Non-trainable params: 0 (0.00 B)
+ Optimizer params: 6,876,500 (26.23 MB)
+
+
+## Training Results
+Epoch 1: Steps=2779, loss=2.0575, accuracy=0.3829
+Epoch 2: Steps=2779, loss=1.7106, accuracy=0.4707
+Epoch 3: Steps=2779, loss=1.5914, accuracy=0.5025
+Epoch 4: Steps=2779, loss=1.5063, accuracy=0.5258
+Epoch 5: Steps=2779, loss=1.4324, accuracy=0.5462
+Epoch 6: Steps=2779, loss=1.3619, accuracy=0.5664
+Epoch 7: Steps=2779, loss=1.2925, accuracy=0.5868
+Epoch 8: Steps=2779, loss=1.2247, accuracy=0.6072
+Epoch 9: Steps=2779, loss=1.1593, accuracy=0.6271
+Epoch 10: Steps=2779, loss=1.0980, accuracy=0.6460
+Epoch 11: Steps=2779, loss=1.0421, accuracy=0.6633
+Epoch 12: Steps=2779, loss=0.9927, accuracy=0.6786
+Epoch 13: Steps=2779, loss=0.9493, accuracy=0.6921
+Epoch 14: Steps=2779, loss=0.9117, accuracy=0.7035
+Epoch 15: Steps=2779, loss=0.8777, accuracy=0.7142
+Epoch 16: Steps=2779, loss=0.8493, accuracy=0.7232
+Epoch 17: Steps=2779, loss=0.8222, accuracy=0.7316
+Epoch 18: Steps=2779, loss=0.7990, accuracy=0.7389
+Epoch 19: Steps=2779, loss=0.7789, accuracy=0.7452
+Epoch 20: Steps=2779, loss=0.7612, accuracy=0.7507

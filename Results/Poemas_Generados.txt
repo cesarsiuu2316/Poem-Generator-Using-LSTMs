@@ -1,0 +1,185 @@
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_1.keras
+Date: 2025-06-22T02:31:22.364939
+
+Seed phrase:
+god noticed it was good
+
+Generated poem:
+god noticed it was good to the street to the spectacle of the street and the conversation
+of the poetry that starts the street and the street
+and the street and the street and starting and present
+the street in the poet the street in the street and started at the story
+and the street of the street and the sea
+the world is a control of the street that shared
+the street and started the street and she says
+in the street an
+
+Generation time: 31.27 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_1.keras
+Date: 2025-06-22T02:33:34.888537
+
+Seed phrase:
+god noticed it was good
+
+Generated poem:
+god noticed it was good to make us from the words
+the control: the way to climb in your air like the chinese and the like time
+has no one wanted by the triatroom house
+and regular with bail. inside the leaf,
+and i was more of the minor weeks
+of the first story they’re striking at the car while
+don’t run for my head,
+self-black defence yards in a cold.
+my feet and strings when i think of his life
+who came to the being po
+
+Generation time: 30.97 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_2.keras
+Date: 2025-06-22T04:40:31.843253
+Temperature: 0.5
+
+Seed phrase:
+why would someone think that
+
+Generated poem:
+why would someone think that spent the story,
+a boy in the red tongue
+and screams and spots and the first power of the bed.
+he like this is the story. the strangers of the floor.
+the fresh sky changed to see in for the news.
+he was a check of the conscious chair,
+softly the parties of something
+of the street, the things i was closed put out of the real dragons
+and his last night of the bed, from the stars
+and works and the o
+
+Generation time: 40.78 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_3.keras
+Date: 2025-06-22T08:58:58.861042
+Temperature: 0.5
+
+Seed phrase:
+even when the stars fell y
+
+Generated poem:
+even when the stars fell you. her white past
+the dead life is a residence to the sea
+that will we be heard to say it
+is a brass that i love my single bar and the moon
+from the dream and the sky for no birth,
+when i was the liv
+
+Generation time: 17.13 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_3.keras
+Date: 2025-06-22T08:59:47.175851
+Temperature: 0.2
+
+Seed phrase:
+even when the stars fell y
+
+Generated poem:
+even when the stars fell you to the bridge.
+the street was a childhood in the street on the street.
+the state of the street of the street with the street and black streets
+and the street on the street and street.
+the moon is a
+
+Generation time: 15.84 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_4.keras
+Date: 2025-06-22T09:30:10.818327
+Temperature: 0.5
+
+Seed phrase:
+hi, let's try this
+
+Generated poem:
+hi, let's try this father would have no word from the really south,
+the strangers to walk of the way alone,
+and the wa
+
+Generation time: 7.89 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_4.keras
+Date: 2025-06-22T09:30:45.208647
+Temperature: 0.2
+
+Seed phrase:
+hi, let's try this
+
+Generated poem:
+hi, let's try this was a secret of the sea of the sea.
+i was a start the start of the sea.
+i was a single before the s
+
+Generation time: 7.82 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-22T11:27:09.753735
+Temperature: 0.3
+
+Seed phrase:
+what about now?
+
+Generated poem:
+what about now?
+i was too late an accidental encounter.
+language is erosive.
+it makes us recluses,
+a babe with the wind before knowing what they watch the pain was a wall as the man
+who started her face that belongs to the corners
+and then can be existence in the moon and a tall seeing her statues stand;
+the searc
+
+Generation time: 24.84 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-22T11:28:22.474644
+Temperature: 0.2
+
+Seed phrase:
+even when she fell
+
+Generated poem:
+even when she fell in line,
+and the ship shell of the empty spaces the world was a climax
+from the shadowy land,
+four worked creatures the bare board, or curled like a blue salt.
+i was a child when my first teacher means ago, after all, perhaps there’s none hour
+a winner new minutes trombone
+this window, its blues clackety rise
+a flock of paper. and the memory of the car could fill in space between you.
+every parti
+
+Generation time: 33.72 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-22T11:58:06.538262
+Temperature: 0.4
+
+Seed phrase:
+the giant bean
+
+Generated poem:
+the giant beans and the feet to me,
+i can feel what they’re feeling
+the empty spaces the tennis with your long spite
+after the edges and the control of picked up singles
+like a paradox. starfish. a virus circulates
+
+Generation time: 45.32 seconds
