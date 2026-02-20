@@ -183,3 +183,97 @@ after the edges and the control of picked up singles
 like a paradox. starfish. a virus circulates
 
 Generation time: 45.32 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-22T17:49:24.272162
+Temperature: 0.7
+
+Seed phrase:
+do we all have the same way of thinking?
+
+Generated poem:
+do we all have the same way of thinking?
+it wasn’t a mystical gift, but like a belly and continued to be crouphed
+the invisible body sometimes was true, those with a pale cries
+the ending of their eyes: since
+i was a child when my first teacher
+mispronounced my short lunar calendar strange madeloom as an accustor
+the one stumbors and wear
+
+Generation time: 40.20 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-25T17:50:08.236594
+Temperature: 0.7
+
+Seed phrase:
+don't you remember?
+
+Generated poem:
+don't you remember?
+that’s when we are always fertient there;
+then cailed promises:
+mounds of the world of night, who knows?
+but nothing unites them when no one
+decades, sheets,
+the arm lunches needles between your univ
+
+Generation time: 27.51 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-25T17:51:33.315942
+Temperature: 0.4
+
+Seed phrase:
+pretending to be silent
+
+Generated poem:
+pretending to be silent
+after the man was the same water a head.
+recess! oh, recess!
+one one sisters and then and expressions of a contest of the middle of net of the same gift.
+she stands there were until the needle was before
+there were a man with the bluest selling of the dead.
+before i was a child when my first teache
+
+Generation time: 49.67 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-25T17:54:59.663001
+Temperature: 0.5
+
+Seed phrase:
+i see you
+
+Generated poem:
+i see you through.
+we really taken the shadowy said, and
+the principal pain, blue room,
+but leave the shop shared a fallen of course root
+of the end of the moon,
+the second helpless rumbles, the light of the w
+
+Generation time: 29.59 seconds
+
+==================================================
+Model path used: Modelos/Poem_Generator_Model_5.keras
+Date: 2025-06-25T17:56:43.391904
+Temperature: 0.4
+
+Seed phrase:
+red green blue
+
+Generated poem:
+red green blue, a single body.
+starfase from the shadowy land,
+four own record nothing but ice?
+and then carefully planted from the end
+a single hope.
+negative spaces. what they were nothing?
+the street’s class but
+
+Generation time: 29.85 seconds
